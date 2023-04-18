@@ -1,12 +1,17 @@
 import Exceptions.InvalidCharacterException;
 import Exceptions.MazeException;
 import Exceptions.MazeTypeError;
+
+import java.util.Arrays;
+
 import Colors.Colors;
 
-public class Maze {
+public class Maze implements Cloneable {
     private char[][] matrix;
     private final int height;
     private final int width;
+    private Coordinate entry;
+    private Coordinate exit;
     private Stack<Coordinate> path;
     private Queue<Coordinate> queue;
     private Stack<Queue<Coordinate>> possibilities;
@@ -24,12 +29,6 @@ public class Maze {
         this.possibilities = new Stack<Queue<Coordinate>>((this.getHeight() * this.getWidth()));
     }
 
-    // protected Maze(char[][] labirinth) throws Exception {
-    //     if (labirinth == null) 
-    //         throw new Exception("Maze passed cannot be null, silly");
-    //     this.matrix = labirinth;
-    // }
-
     public int getHeight() {
         return this.height;
     }
@@ -38,10 +37,18 @@ public class Maze {
         return this.width;
     }
 
-    public static void clear() {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();  
+    public Coordinate getEntry() {
+        return this.entry;
     }
+
+    public Coordinate getExit() {
+        return this.exit;
+    }
+    
+    public Coordinate getCurrent() throws Exception {
+        return (Coordinate) this.path.peek();
+    }
+
     public char getPosition(int row, int column) throws Exception {
         if (row < 0 || column < 0)
             throw new MazeException(MazeTypeError.NEGATIVEDIMENSION);
@@ -64,11 +71,18 @@ public class Maze {
         
         this.matrix[row][column] = character;
     } 
-    public Coordinate verifyEntry() throws Exception {
+
+    public void start() throws Exception {
+        this.verifyEntry();
+        this.verifyExit();
+        this.verifyBounds();
+    }
+
+    private Coordinate verifyEntry() throws Exception {
         int[] rowList = {0, this.getHeight()-1};
         int entryCount = 0;
 
-        Coordinate coord = new Coordinate(0, 0);
+        entry = new Coordinate(0, 0);
 
         if (this.matrix[0][0] == 'E' ||
             this.matrix[0][this.getWidth()-1] == 'E' ||
@@ -81,18 +95,19 @@ public class Maze {
                 if (this.matrix[rowList[i]][col] == 'E') {
                     if (entryCount >= 1)
                         throw new MazeException(MazeTypeError.ENTRYEXCESS);
-                    coord = new Coordinate(rowList[i], col);
+                    entry = new Coordinate(rowList[i], col);
                     entryCount ++;
                 } 
             }
         }
+
         int[] colList = {0, this.getWidth()-1};
         for (int s = 0; s < 2; s++) {
             for (int row = 1; row < this.getHeight()-1; row++) {
                 if (matrix[row][colList[s]] == 'E') {
                     if (entryCount >= 1)
                         throw new MazeException(MazeTypeError.ENTRYEXCESS);
-                    coord = new Coordinate(row, colList[s]);
+                    entry = new Coordinate(row, colList[s]);
                     entryCount++;
                 }
             }
@@ -106,17 +121,15 @@ public class Maze {
         if (entryCount == 0) 
             throw new MazeException(MazeTypeError.NOENTRY);
         
-        this.path.push(coord);
-        return coord;
+        this.path.push(entry);
+        return entry;
     }
-    // change to private
-    // decrease the size using loops
 
-    public Coordinate verifyExit() throws Exception {
+    private Coordinate verifyExit() throws Exception {
         int[] rowList = {0, this.getHeight()-1};
         int exitCount = 0;
 
-        Coordinate coord = new Coordinate(0, 0);
+        exit = new Coordinate(0, 0);
 
         if (this.matrix[0][0] == 'S' ||
             this.matrix[0][this.getWidth()-1] == 'S' ||
@@ -129,7 +142,7 @@ public class Maze {
                 if (this.matrix[rowList[i]][col] == 'S') {
                     if (exitCount >= 1)
                         throw new MazeException(MazeTypeError.EXITEXCESS);
-                    coord = new Coordinate(rowList[i], col);
+                    exit = new Coordinate(rowList[i], col);
                     exitCount ++;
                 } 
             }
@@ -141,7 +154,7 @@ public class Maze {
                 if (matrix[row][colList[s]] == 'S') {
                     if (exitCount >= 1)
                         throw new MazeException(MazeTypeError.EXITEXCESS);
-                    coord = new Coordinate(row, colList[s]);
+                    exit = new Coordinate(row, colList[s]);
                     exitCount++;
                 }
             }
@@ -156,10 +169,10 @@ public class Maze {
             throw new MazeException(MazeTypeError.NOEXIT);
         }
 
-        return coord;
+        return exit;
     }
-    // change to private
-    public boolean verifyBounds() throws Exception {
+    
+    private boolean verifyBounds() throws Exception {
          
         for (int col = 1; col < this.getWidth()-1; col++) {
             if (this.matrix[0][col] == ' ' || this.matrix[0][col] == '*') throw new MazeException(MazeTypeError.BORDERHOLE);
@@ -210,46 +223,41 @@ public class Maze {
         else this.rollback();
     }
 
+    @SuppressWarnings("unchecked")
     public void rollback() throws Exception {
         this.setChar(((Coordinate) this.path.peek()).getRow(), ((Coordinate)this.path.peek()).getCol(), '.');
         this.path.pop();
-        this.queue = this.possibilities.peek();
+        this.queue = (Queue<Coordinate>) this.possibilities.peek();
         this.possibilities.pop();
     }
     
-    public String pathToString() {
-        return this.path.toString();
-    }
-    public String queueToString() {
-        return this.queue.toString();
-    }
-    public String possibilitiesToString() {
-        return this.possibilities.toString();
-    }
-
-    public Coordinate getCurrent() throws Exception {
-        return (Coordinate) this.path.peek();
-    }
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
     }
     @Override
     public int hashCode() {
-        int hash = 2;
-        hash = 3 * hash + Integer.valueOf(this.height).hashCode();
-        hash = 5 * hash + Integer.valueOf(this.width).hashCode();
-        hash = 7 * hash + (this.matrix).hashCode();
-        hash = 11 * hash + (this.path).hashCode();
-        hash = 17 * hash + (this.queue).hashCode();
-        hash = 19 * hash + (this.possibilities).hashCode();
-
-        if (hash < 0) hash = -hash;
-        return hash;
+        try {
+            int hash = 2;
+            hash = 3 * hash + Integer.valueOf(this.height).hashCode();
+            hash = 5 * hash + Integer.valueOf(this.width).hashCode();
+            hash = 7 * hash + Arrays.deepHashCode(this.matrix);
+            hash = 11 * hash + new Stack<Coordinate>(this.getHeight() * this.getWidth()).hashCode();
+            hash = 17 * hash + new Queue<Coordinate>(3).hashCode();
+            hash = 19 * hash + new Stack<Queue<Coordinate>>(this.getHeight() * this.getWidth()).hashCode();
+            hash = 23 * hash + new Coordinate(this.exit.getRow(), this.exit.getCol()).hashCode();
+            hash = 29 * hash + new Coordinate(this.entry.getRow(), this.entry.getCol()).hashCode();
+    
+            if (hash < 0) hash = -hash;
+            return hash;
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return 0;
     }
     @Override
     public String toString() {
-        // StringBuilder line = new StringBuilder();
         String line = "";
         for (int r = 0; r < this.height; r++) {
             for (int c = 0; c < this.width; c++) {
@@ -258,16 +266,30 @@ public class Maze {
                 else 
                     line += Colors.RESET + "" + this.matrix[r][c];
             }
-                // line.append(this.matrix[r][c] + "");
-            // line.append("\n");
             line += "\n";
         }
         return line.toString();
     }
-    // @Override
-    // public Object clone() {
-    //     try {
-    //         return Maze 
-    //     }
-    // }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Maze mazeCopy = (Maze) super.clone();
+        try {
+            mazeCopy.matrix = new char[this.getHeight()][this.getWidth()];
+            for (int i = 0; i < this.getHeight(); i++)
+                for (int j = 0; j < this.getWidth(); j++)
+                    mazeCopy.matrix[i][j] = this.matrix[i][j];
+
+            mazeCopy.entry = new Coordinate(this.entry.getRow(), this.entry.getCol());
+            mazeCopy.exit = new Coordinate(this.exit.getRow(), this.exit.getCol());
+            mazeCopy.path = new Stack<Coordinate>(this.getHeight() * this.getWidth());
+            mazeCopy.queue = new Queue<Coordinate>(3);
+            mazeCopy.possibilities = new Stack<Queue<Coordinate>>(this.getHeight() * this.getWidth());
+
+
+        }
+        catch (Exception e) {}
+        
+        return mazeCopy;
+    }
 }
