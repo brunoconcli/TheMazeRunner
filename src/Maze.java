@@ -223,7 +223,6 @@ public class Maze implements Cloneable {
         else this.rollback();
     }
 
-    @SuppressWarnings("unchecked")
     public void rollback() throws Exception {
         this.setChar(((Coordinate) this.path.peek()).getRow(), ((Coordinate)this.path.peek()).getCol(), '.');
         this.path.pop();
