@@ -1,57 +1,81 @@
 import java.io.*;
-import java.util.concurrent.TimeUnit;
 import Colors.Colors;
 
 public class App {
+    static BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+
+    public static void clear() {
+        System.out.print("\033[H\033[2J");  
+        System.out.flush();  
+    }
+
+    public static void run() throws Exception {
+        String usersFile;
+        clear();
+
+        System.out.println("Copy below the file which contains the maze: ");
+        usersFile = bufferedReader.readLine();
+
+        File file = new File(usersFile);
+        Reader myReader = new Reader(file);
+        Maze myMaze = new Maze(myReader.getBounds(), myReader.getBounds());
+
+        for (int row = 0; row<myMaze.getHeight(); row++) {
+            myReader.readLine();
+            for (int col = 0; col<myMaze.getWidth(); col++) 
+                myMaze.setChar(row, col, myReader.getCharInCol(col));   
+        }
+
+        myMaze.start();
+
+        int steps = 0;
+        long startTime = System.currentTimeMillis();
+        for (;;) {
+            if (!myMaze.getCurrent().equals(myMaze.getExit())) {
+                myMaze.move();
+            }
+            else break;
+            
+            steps ++;
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("\n\nTo String():\n"+ myMaze.toString());
+        System.out.println(Colors.RESET+
+                            "Congrats you've made it!\nTotal steps: " + steps + 
+                            "\nTotal ms: " + 
+                            (endTime - startTime));
+        
+        System.out.println(Colors.GREEN_BOLD + "Press [ENTER] key to continue..." + Colors.RESET);
+        bufferedReader.readLine();
+    }
+    
     public static void main(String[] args) {
         try {
-            //File file = new File("/Users/u22303/Desktop/Labirintos corretos para teste/Teste1.txt");
-            //File working = new File("Y:\\Labirintos corretos para teste\\Teste1.txt");
-            String[] mazeTests = {"Teste1", "Teste2", "Teste3", "Teste4", "Teste5", "Teste6"};
-            Maze.clear();
-
-            for (int m = 0; m < mazeTests.length; m++) {
-
-                File file = new File("src/Mazes/" + mazeTests[m] + ".txt");
-                Reader myReader = new Reader(file);
-                Maze myMaze = new Maze(myReader.getBounds(), myReader.getBounds());
-    
-                for (int row = 0; row<myMaze.getHeight(); row++) {
-                    myReader.readLine();
-                    for (int col = 0; col<myMaze.getWidth(); col++) 
-                        myMaze.setChar(row, col, myReader.getCharInCol(col));
-                        
-                }
-                // the big three:
-                myMaze.verifyEntry();
-                myMaze.verifyExit();
-                myMaze.verifyBounds();
-    
-                int counter = 0;
-                long startTime = System.currentTimeMillis();
-                String[] map = new String[myMaze.getHeight()*myMaze.getWidth()];
-                for (;;) {
-                    map[counter] = myMaze.pathToString();
+            run();
+            String option;
+        while(true) {
+            System.out.println(Colors.WHITE_BOLD + "Thank you for playing!\nWould you like to rerun?(Y/N): " + Colors.RESET);
+            option = bufferedReader.readLine();
+            switch(option.toUpperCase()) {
+                case "Y":
+                    main(args);
+                    break;
+                case "N":
+                    System.out.println(Colors.CYAN + "Thanks for playing!" + Colors.RESET);
+                    break;
+                default:
+                    System.out.println("Invalid option");
                     
-                    if (!myMaze.getCurrent().equals(myMaze.verifyExit())) {
-                        myMaze.move();
-                    }
-                    else break;
-                    
-                    counter ++;
+                    break;
                 }
-                long endTime = System.currentTimeMillis();
-                System.out.println("\n\n" + mazeTests[m].toUpperCase() + " To String():\n"+ myMaze.toString());
-                System.out.println(Colors.RESET+"Congrats you've made it!\nTotal steps: " + counter + "\nTotal ms: " + (endTime - startTime));
-                // System.out.println("Path used: ");
-                // for (int i = 0; i<map.length; i++)
-                //     System.out.print(map[i] + " ");
-            }
+            break;
+        }
 
-        } // get the actual amount in millis, get colour in stars (asterísicos) and check if there's no way out in the maze (returned to the begining)
-
+        }
         catch(Exception e) {
             System.out.println(e.getMessage());
+            main(args);
         }
     }
 }
