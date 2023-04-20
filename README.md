@@ -12,3 +12,5 @@ After spending some great time invested into making it good, it finally worked! 
 
 Hope anyone who intends running the code to check the results likes it!
 Pleasing coding y'all.
+
+> Teste para commit no mac
