@@ -46,6 +46,7 @@ public class Maze implements Cloneable {
     }
     
     public Coordinate getCurrent() throws Exception {
+        if (this.path.isEmpty()) return (Coordinate) this.verifyEntry();
         return (Coordinate) this.path.peek();
     }
 
@@ -121,7 +122,7 @@ public class Maze implements Cloneable {
         if (entryCount == 0) 
             throw new MazeException(MazeTypeError.NOENTRY);
         
-        this.path.push(entry);
+        // this.path.push(entry);
         return entry;
     }
 
@@ -197,7 +198,7 @@ public class Maze implements Cloneable {
             int col = current.getCol() + colList[i];
             if ((row >= 0 && col >= 0) && (row <= this.getHeight() -1 && col <= this.getWidth() -1) ) {
                 position = new Coordinate(row, col);
-                if ((this.matrix[position.getRow()][position.getCol()] == ' ' || this.matrix[position.getRow()][position.getCol()] == 'S') && !path.peek().equals(position) && this.matrix[position.getRow()][position.getCol()] != '*') {
+                if ((this.matrix[position.getRow()][position.getCol()] == ' ' || this.matrix[position.getRow()][position.getCol()] == 'S') && !this.getCurrent().equals(position) && this.matrix[position.getRow()][position.getCol()] != '*') {
                     if (this.matrix[position.getRow()][position.getCol()] == 'S') {
                         this.queue = new Queue<Coordinate>(3);
                         this.queue.push(position);
@@ -230,6 +231,19 @@ public class Maze implements Cloneable {
         this.possibilities.pop();
     }
     
+    public String inverse() throws Exception {
+        StringBuilder map = new StringBuilder("");
+        Stack<Coordinate> inversePath = new Stack<Coordinate>(this.getHeight() * this.getWidth());
+        while (!this.path.isEmpty()) {
+            inversePath.push(this.path.peek());
+            this.path.pop();
+        }
+        while (!inversePath.isEmpty()) {
+            map.append(inversePath.peek());
+            inversePath.pop();
+        }
+        return map.toString();
+    }
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -255,6 +269,7 @@ public class Maze implements Cloneable {
         }
         return 0;
     }
+
     @Override
     public String toString() {
         String line = "";
@@ -287,6 +302,7 @@ public class Maze implements Cloneable {
 
 
         }
+
         catch (Exception e) {}
         
         return mazeCopy;
