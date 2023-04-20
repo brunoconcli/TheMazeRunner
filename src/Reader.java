@@ -6,10 +6,6 @@ public class Reader {
     private char[] line;
 
     public Reader(File file) throws Exception {
-        // melhorar, exeções não funcionam
-        // if (!file.exists())
-        //     throw new Exception("File not found in this machine");
-
         this.bufferedReader = new BufferedReader(new FileReader(file));
     }
 
@@ -42,10 +38,23 @@ public class Reader {
     }
 
     public String toString() {
-        return "";
+        StringBuilder message = new StringBuilder("");
+        for (int i = 0; i< this.line.length; i++) {
+            message.append(this.line[i]);
+        }
+
+        return message.toString();
     }
 
-    public boolean equals() {
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (this == obj) return true;
+
+        if (this.getClass() != obj.getClass()) return false;
+
+        Reader c = (Reader)obj;
+        if (this.line != c.line) return false;
+        
         return true;
     }
 }
