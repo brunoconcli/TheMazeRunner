@@ -53,7 +53,7 @@ public class App {
                                 "Congrats you've made it!\nTotal steps: " + steps + 
                                 "\nTotal ms: " + 
                                 (endTime - startTime));
-            
+            System.out.println("Path used: " + myMaze.inverse());
             System.out.println(Colors.GREEN_BOLD + "Press [ENTER] key to continue..." + Colors.RESET);
             bufferedReader.readLine();
         }
