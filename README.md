@@ -15,6 +15,3 @@ Pleasing coding y'all.
 
 > Teste para commit no mac
 
-FAZER:
-EQUALS MAZE
-METODOS READER

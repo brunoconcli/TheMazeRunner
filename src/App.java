@@ -59,32 +59,4 @@ public class App {
         }
     }
     
-    public static void main(String[] args) {
-        try {
-            run();
-            String option;
-        while(true) {
-            System.out.println(Colors.WHITE_BOLD + "Thank you for playing!\nWould you like to rerun?(Y/N): " + Colors.RESET);
-            option = bufferedReader.readLine();
-            switch(option.toUpperCase()) {
-                case "Y":
-                    main(args);
-                    break;
-                case "N":
-                    System.out.println(Colors.CYAN + "Thanks for playing!" + Colors.RESET);
-                    break;
-                default:
-                    System.out.println("Invalid option");
-                    
-                    break;
-                }
-            break;
-        }
-
-        }
-        catch(Exception e) {
-            System.out.println(e.getMessage());
-            main(args);
-        }
-    }
 }
